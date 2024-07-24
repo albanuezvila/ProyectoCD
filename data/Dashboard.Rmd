@@ -7,6 +7,7 @@ output:
     vertical_layout: fill
     social: menu
     source_code: embed
+runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
@@ -53,7 +54,8 @@ df <- df %>% filter(cntry %in% valid_countries)
 df$cntry <- droplevels(df$cntry)
 ```
 
-
+Página 1: Actitud e Inmigración
+=======================================================================
 Column {.sidebar}
 -----------------------------------------------------------------------
 
@@ -63,10 +65,19 @@ Column {.sidebar}
 selectInput('cntry', 'Selecciona un país:', choices = levels(df$cntry), selected = levels(df$cntry)[1])
 ```
 
-Column {data-width=100}
+### Sobre el estudio
+
+<div style="font-size: 0.8em;">
+  <p style="text-align: justify;">Este dashboard muestra cómo cambian las opiniones en los distintos países europeos respecto a la actitud hacia los demás, al impacto de la inmigración, y a la adopción de niños y niñas por parte de personas homosexuales.</p>
+  <p style="text-align: center;"><b>Página 1: ¿Cómo varía la actitud hacia los demás en diferentes países de la UE? ¿Cómo se correlaciona con la percepción del bienestar en relación con la inmigración?</b></p>
+</div>
+
+
+
+Column {data-height=80}
 -----------------------------------------------------------------------
 
-### Histograma: Actitud hacia los demás
+### ¿Qué actitud se adopta hacia los demás?
 
 ```{r}
 renderPlot({
@@ -75,7 +86,7 @@ renderPlot({
   
   ggplot(filtered_df, aes(x = factor(actitud_positiva))) +
     geom_bar(fill = "coral1", color = "white") +
-    labs(title = "Distribución de Actitud hacia los demás", x = "Actitud", y = "Frecuencia") +
+    labs(title = "Distribución de 'Actitud hacia los demás'", x = "Actitud", y = "Frecuencia") +
     geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
     theme(
       plot.title = element_text(hjust = 0.5),
@@ -90,7 +101,7 @@ renderPlot({
 })
 ```
 
-### Histograma: Opinión Calidad de Vida e Inmigración
+### ¿Cómo impacta la inmigración en la calidad de vida?
 
 ```{r}
 renderPlot({
@@ -101,7 +112,7 @@ renderPlot({
   
   ggplot(filtered_df, aes(x = imwbcnt)) +
     geom_histogram(binwidth = 1, fill = "coral1", color = "white") +
-    labs(title = "Distribución de 'opinión calidad de vida e inmigración'", x = "Impacto en calidad de vida", y = "Frecuencia") +
+    labs(title = "Distribución de 'Opinión calidad de vida e inmigración'", x = "Impacto en calidad de vida", y = "Frecuencia") +
     geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
     scale_x_continuous(breaks = possible_values_imwbcnt) +
     theme(
@@ -116,7 +127,9 @@ renderPlot({
 })
 ```
 
-### Mapa de Calor: Actitud vs. Opinión Calidad de Vida e Inmigración
+Column {data-height=100}
+-----------------------------------------------------------------------
+### ¿La actitud que tenemos hacia los demás correlaciona con nuestras opiniones acerca de la inmigración?
 
 ```{r}
 renderPlot({
@@ -144,3 +157,6 @@ renderPlot({
 })
 ```
 
+
+Página 2
+=======================================================================
