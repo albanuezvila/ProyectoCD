@@ -1,0 +1,130 @@
+---
+title: "Integración en la UE"
+author: "Alba Nuez Vilà"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+    social: menu
+    source_code: embed
+---
+
+```{r setup, include=FALSE}
+#Librerías de interés
+library(flexdashboard)
+library(tidyverse)
+library(maps)
+library(plotly)
+library(shiny)
+library(readxl)
+library(dplyr)
+library(leaflet)
+library(lattice)
+library(ggplot2)
+```
+
+```{r}
+#Cargamos la base de datos depurada
+df <- read_excel("Depurada_ESS11_subset.xlsx")
+#La variable país debe ser un factor
+df$cntry <- as.factor(df$cntry)
+#Nombre de los países
+country_names <- c(
+  AL = "Albania", AT = "Austria", BE = "Belgium", BG = "Bulgaria", 
+  CH = "Switzerland", CY = "Cyprus", CZ = "Czechia", DE = "Germany", 
+  DK = "Denmark", EE = "Estonia", ES = "Spain", FI = "Finland", 
+  FR = "France", GB = "United Kingdom", GE = "Georgia", GR = "Greece", 
+  HR = "Croatia", HU = "Hungary", IE = "Ireland", IS = "Iceland", 
+  IL = "Israel", IT = "Italy", LT = "Lithuania", LU = "Luxembourg", 
+  LV = "Latvia", ME = "Montenegro", MK = "North Macedonia", NL = "Netherlands", 
+  NO = "Norway", PL = "Poland", PT = "Portugal", RO = "Romania", 
+  RS = "Serbia", RU = "Russian Federation", SE = "Sweden", SI = "Slovenia", 
+  SK = "Slovakia", TR = "Turkey", UA = "Ukraine", XK = "Kosovo"
+)
+```
+
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+table(df$cntry)
+```
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+Hist1 <- ggplot(df, aes(x = factor(actitud_positiva))) +
+  geom_bar(fill = "coral1", color = "white") +
+  labs(title = "Distribución de Actitud hacia los demás", x = "Actitud", y = "Frecuencia") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "grey"),
+    axis.text.x = element_text(angle = 90, hjust = 1, color = "black"),  # Rotate x-axis labels 90 degrees
+    axis.text.y = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  )
+Hist1
+
+possible_values_imwbcnt <- seq(min(df$imwbcnt, na.rm = TRUE), max(df$imwbcnt, na.rm = TRUE), by = 1)
+Hist2 <- ggplot(df, aes(x = imwbcnt)) +
+  geom_histogram(binwidth = 1, fill = "coral1", color = "white") +
+  labs(title = "Distribución de 'opinión calidad de vida e immigración'", x = "Impacto en calidad de vida", y = "Frecuencia") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
+  scale_x_continuous(breaks = possible_values_imwbcnt) +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "grey"),
+    axis.text = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  )
+Hist2
+
+# Convert to matrix format for levelplot without normalization
+
+heatmap_data <- df %>%
+  group_by(actitud_positiva, imwbcnt) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+heatmap_matrix <- xtabs(count ~ actitud_positiva + imwbcnt, data = heatmap_data)
+
+# Plot the heatmap with absolute numbers in each cell
+levelplot(heatmap_matrix, 
+          xlab = "Actitud", 
+          ylab = "Opinión immigración y calidad de vida", 
+          col.regions = colorRampPalette(c("white", "coral1")),
+          scales = list(x = list(rot = 90)),
+          panel = function(...) {
+            panel.levelplot(...)
+            panel.text(row(heatmap_matrix), col(heatmap_matrix), 
+                       labels = heatmap_matrix, cex = 0.8)  # Display absolute counts
+          },
+          main = "Mapa de calor: Actitud vs opinión immigración y calidad de vida")
+```
+
+
+### Chart C
+
+```{r}
+
+```
+
+
+### Chart D
+
+```{r}
+
+```
