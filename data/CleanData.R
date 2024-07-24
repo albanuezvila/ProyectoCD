@@ -1,7 +1,7 @@
 #Código de R para importar datos
 library(readxl)
-Original_ESS11 <- read_excel("Original_ESS11.xlsx")
-View(Original_ESS11)
+df <- read_excel("Original_ESS11.xlsx")
+View(df)
 
 #Código de R para tratar los valores faltantes
 library(dplyr)
