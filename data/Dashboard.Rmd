@@ -21,6 +21,7 @@ library(dplyr)
 library(leaflet)
 library(lattice)
 library(ggplot2)
+library(gridExtra)
 ```
 
 ```{r}
@@ -44,19 +45,19 @@ country_names <- c(
 ```
 
 
-Column {data-width=650}
+Column {data-height=50}
 -----------------------------------------------------------------------
 
-### Chart A
+### Selección de país
 
 ```{r}
-table(df$cntry)
+selectInput('cntry', 'Selecciona un país:', choices = levels(df$cntry), selected = levels(df$cntry)[1])
 ```
 
-Column {data-width=200}
+Column {data-width=100}
 -----------------------------------------------------------------------
 
-### Chart B
+### Histograma: Actitud hacia los demás
 
 ```{r}
 Hist1 <- ggplot(df, aes(x = factor(actitud_positiva))) +
@@ -74,11 +75,16 @@ Hist1 <- ggplot(df, aes(x = factor(actitud_positiva))) +
     axis.title = element_text(color = "black")
   )
 Hist1
+```
+
+### Histograma: Opinión Calidad de Vida e Inmigración
+
+```{r}
 
 possible_values_imwbcnt <- seq(min(df$imwbcnt, na.rm = TRUE), max(df$imwbcnt, na.rm = TRUE), by = 1)
 Hist2 <- ggplot(df, aes(x = imwbcnt)) +
   geom_histogram(binwidth = 1, fill = "coral1", color = "white") +
-  labs(title = "Distribución de 'opinión calidad de vida e immigración'", x = "Impacto en calidad de vida", y = "Frecuencia") +
+  labs(title = "Distribución de 'opinión calidad de vida e inmigración'", x = "Impacto en calidad de vida", y = "Frecuencia") +
   geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
   scale_x_continuous(breaks = possible_values_imwbcnt) +
   theme(
@@ -91,9 +97,12 @@ Hist2 <- ggplot(df, aes(x = imwbcnt)) +
     axis.title = element_text(color = "black")
   )
 Hist2
+```
 
+### Mapa de Calor: Actitud vs. Opinión Calidad de Vida e Inmigración
+
+```{r}
 # Convert to matrix format for levelplot without normalization
-
 heatmap_data <- df %>%
   group_by(actitud_positiva, imwbcnt) %>%
   summarise(count = n()) %>%
@@ -102,9 +111,9 @@ heatmap_data <- df %>%
 heatmap_matrix <- xtabs(count ~ actitud_positiva + imwbcnt, data = heatmap_data)
 
 # Plot the heatmap with absolute numbers in each cell
-levelplot(heatmap_matrix, 
+mapa_calor <- levelplot(heatmap_matrix, 
           xlab = "Actitud", 
-          ylab = "Opinión immigración y calidad de vida", 
+          ylab = "Opinión inmigración y calidad de vida", 
           col.regions = colorRampPalette(c("white", "coral1")),
           scales = list(x = list(rot = 90)),
           panel = function(...) {
@@ -113,18 +122,6 @@ levelplot(heatmap_matrix,
                        labels = heatmap_matrix, cex = 0.8)  # Display absolute counts
           },
           main = "Mapa de calor: Actitud vs opinión immigración y calidad de vida")
-```
 
-
-### Chart C
-
-```{r}
-
-```
-
-
-### Chart D
-
-```{r}
-
+mapa_calor
 ```
