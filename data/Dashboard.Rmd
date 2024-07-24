@@ -125,3 +125,8 @@ mapa_calor <- levelplot(heatmap_matrix,
 
 mapa_calor
 ```
+
+```{r}
+
+```
+
