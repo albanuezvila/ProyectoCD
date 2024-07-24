@@ -1,5 +1,5 @@
 ---
-title: "Integración en la UE"
+title: "Integración en la UE" 
 author: "Alba Nuez Vilà"
 output: 
   flexdashboard::flex_dashboard:
@@ -42,10 +42,19 @@ country_names <- c(
   RS = "Serbia", RU = "Russian Federation", SE = "Sweden", SI = "Slovenia", 
   SK = "Slovakia", TR = "Turkey", UA = "Ukraine", XK = "Kosovo"
 )
+df$cntry <- factor(df$cntry, levels = names(country_names), labels = country_names)
+
+# Filtrar países con conteos mayores que 0
+country_counts <- df %>% group_by(cntry) %>% summarise(count = n())
+valid_countries <- country_counts %>% filter(count > 0) %>% pull(cntry)
+
+# Filtrar el dataframe para incluir solo países válidos
+df <- df %>% filter(cntry %in% valid_countries)
+df$cntry <- droplevels(df$cntry)
 ```
 
 
-Column {data-height=50}
+Column {.sidebar}
 -----------------------------------------------------------------------
 
 ### Selección de país
@@ -60,73 +69,78 @@ Column {data-width=100}
 ### Histograma: Actitud hacia los demás
 
 ```{r}
-Hist1 <- ggplot(df, aes(x = factor(actitud_positiva))) +
-  geom_bar(fill = "coral1", color = "white") +
-  labs(title = "Distribución de Actitud hacia los demás", x = "Actitud", y = "Frecuencia") +
-  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
-  theme(
-    plot.title = element_text(hjust = 0.5),
-    panel.background = element_blank(),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.line = element_line(color = "grey"),
-    axis.text.x = element_text(angle = 90, hjust = 1, color = "black"),  # Rotate x-axis labels 90 degrees
-    axis.text.y = element_text(color = "black"),
-    axis.title = element_text(color = "black")
-  )
-Hist1
+renderPlot({
+  selected_country <- input$cntry
+  filtered_df <- df %>% filter(cntry == selected_country)
+  
+  ggplot(filtered_df, aes(x = factor(actitud_positiva))) +
+    geom_bar(fill = "coral1", color = "white") +
+    labs(title = "Distribución de Actitud hacia los demás", x = "Actitud", y = "Frecuencia") +
+    geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      panel.background = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.line = element_line(color = "grey"),
+      axis.text.x = element_text(angle = 90, hjust = 1, color = "black"),  # Rotate x-axis labels 90 degrees
+      axis.text.y = element_text(color = "black"),
+      axis.title = element_text(color = "black")
+    )
+})
 ```
 
 ### Histograma: Opinión Calidad de Vida e Inmigración
 
 ```{r}
-
-possible_values_imwbcnt <- seq(min(df$imwbcnt, na.rm = TRUE), max(df$imwbcnt, na.rm = TRUE), by = 1)
-Hist2 <- ggplot(df, aes(x = imwbcnt)) +
-  geom_histogram(binwidth = 1, fill = "coral1", color = "white") +
-  labs(title = "Distribución de 'opinión calidad de vida e inmigración'", x = "Impacto en calidad de vida", y = "Frecuencia") +
-  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
-  scale_x_continuous(breaks = possible_values_imwbcnt) +
-  theme(
-    plot.title = element_text(hjust = 0.5),
-    panel.background = element_blank(),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    axis.line = element_line(color = "grey"),
-    axis.text = element_text(color = "black"),
-    axis.title = element_text(color = "black")
-  )
-Hist2
+renderPlot({
+  selected_country <- input$cntry
+  filtered_df <- df %>% filter(cntry == selected_country)
+  
+  possible_values_imwbcnt <- seq(min(filtered_df$imwbcnt, na.rm = TRUE), max(filtered_df$imwbcnt, na.rm = TRUE), by = 1)
+  
+  ggplot(filtered_df, aes(x = imwbcnt)) +
+    geom_histogram(binwidth = 1, fill = "coral1", color = "white") +
+    labs(title = "Distribución de 'opinión calidad de vida e inmigración'", x = "Impacto en calidad de vida", y = "Frecuencia") +
+    geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
+    scale_x_continuous(breaks = possible_values_imwbcnt) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      panel.background = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.line = element_line(color = "grey"),
+      axis.text = element_text(color = "black"),
+      axis.title = element_text(color = "black")
+    )
+})
 ```
 
 ### Mapa de Calor: Actitud vs. Opinión Calidad de Vida e Inmigración
 
 ```{r}
-# Convert to matrix format for levelplot without normalization
-heatmap_data <- df %>%
-  group_by(actitud_positiva, imwbcnt) %>%
-  summarise(count = n()) %>%
-  ungroup()
-
-heatmap_matrix <- xtabs(count ~ actitud_positiva + imwbcnt, data = heatmap_data)
-
-# Plot the heatmap with absolute numbers in each cell
-mapa_calor <- levelplot(heatmap_matrix, 
-          xlab = "Actitud", 
-          ylab = "Opinión inmigración y calidad de vida", 
-          col.regions = colorRampPalette(c("white", "coral1")),
-          scales = list(x = list(rot = 90)),
-          panel = function(...) {
-            panel.levelplot(...)
-            panel.text(row(heatmap_matrix), col(heatmap_matrix), 
-                       labels = heatmap_matrix, cex = 0.8)  # Display absolute counts
-          },
-          main = "Mapa de calor: Actitud vs opinión immigración y calidad de vida")
-
-mapa_calor
-```
-
-```{r}
-
+renderPlot({
+  selected_country <- input$cntry
+  filtered_df <- df %>% filter(cntry == selected_country)
+  
+  heatmap_data <- filtered_df %>%
+    group_by(actitud_positiva, imwbcnt) %>%
+    summarise(count = n()) %>%
+    ungroup()
+  
+  heatmap_matrix <- xtabs(count ~ actitud_positiva + imwbcnt, data = heatmap_data)
+  
+  levelplot(heatmap_matrix, 
+            xlab = "Actitud", 
+            ylab = "Opinión inmigración y calidad de vida", 
+            col.regions = colorRampPalette(c("white", "coral1")),
+            scales = list(x = list(rot = 90)),
+            panel = function(...) {
+              panel.levelplot(...)
+              panel.text(row(heatmap_matrix), col(heatmap_matrix), 
+                         labels = heatmap_matrix, cex = 0.8)  # Display absolute counts
+            },
+            main = "Mapa de calor: Actitud vs opinión immigración y calidad de vida")
+})
 ```
 
