@@ -62,7 +62,9 @@ Column {.sidebar}
 ### Selección de país
 
 ```{r}
-selectInput('cntry', 'Selecciona un país:', choices = levels(df$cntry), selected = levels(df$cntry)[1])
+selectInput('cntry', 'Selecciona el país que quieras visualizar:', 
+            choices = c("Mostrar todos los países" = "all", levels(df$cntry)), 
+            selected = "all")
 ```
 
 ### Sobre el estudio
@@ -82,7 +84,13 @@ Column {data-height=80}
 ```{r}
 renderPlot({
   selected_country <- input$cntry
-  filtered_df <- df %>% filter(cntry == selected_country)
+  
+  # Check if "Show all countries" is selected
+  if (selected_country == "all") {
+    filtered_df <- df
+  } else {
+    filtered_df <- df %>% filter(cntry == selected_country)
+  }
   
   ggplot(filtered_df, aes(x = factor(actitud_positiva))) +
     geom_bar(fill = "coral1", color = "white") +
@@ -106,7 +114,13 @@ renderPlot({
 ```{r}
 renderPlot({
   selected_country <- input$cntry
-  filtered_df <- df %>% filter(cntry == selected_country)
+  
+  # Check if "Show all countries" is selected
+  if (selected_country == "all") {
+    filtered_df <- df
+  } else {
+    filtered_df <- df %>% filter(cntry == selected_country)
+  }
   
   possible_values_imwbcnt <- seq(min(filtered_df$imwbcnt, na.rm = TRUE), max(filtered_df$imwbcnt, na.rm = TRUE), by = 1)
   
@@ -134,7 +148,13 @@ Column {data-height=100}
 ```{r}
 renderPlot({
   selected_country <- input$cntry
-  filtered_df <- df %>% filter(cntry == selected_country)
+  
+  # Check if "Show all countries" is selected
+  if (selected_country == "all") {
+    filtered_df <- df
+  } else {
+    filtered_df <- df %>% filter(cntry == selected_country)
+  }
   
   heatmap_data <- filtered_df %>%
     group_by(actitud_positiva, imwbcnt) %>%
@@ -153,10 +173,66 @@ renderPlot({
               panel.text(row(heatmap_matrix), col(heatmap_matrix), 
                          labels = heatmap_matrix, cex = 0.8)  # Display absolute counts
             },
-            main = "Mapa de calor: Actitud vs opinión immigración y calidad de vida")
+            main = "Mapa de calor: Actitud vs opinión inmigración y calidad de vida")
 })
 ```
 
 
-Página 2
+Página 2: Adopción LGTBQ+
 =======================================================================
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+### Selección de país
+
+```{r}
+checkboxGroupInput("selected_cntry", "Selecciona los países que quieras visualizar:",
+                   choices = unique(df$cntry),
+                   selected = unique(df$cntry))
+```
+
+### Sobre el estudio
+
+<div style="font-size: 0.8em;">
+  <p style="text-align: justify;">Este dashboard muestra cómo cambian las opiniones en los distintos países europeos respecto a la actitud hacia los demás, al impacto de la inmigración, y a la adopción de niños y niñas por parte de personas homosexuales.</p>
+  <p style="text-align: center;"><b>Página 2: ¿Cómo difieren las opiniones sobre la adopción LGTBQ+ entre países?</b></p>
+</div>
+
+Column {data-height=100}
+-----------------------------------------------------------------------
+
+### Opiniones sobre la adopción LGTBQ+
+
+```{r}
+renderPlot({
+  # Prepare data reactively based on selected countries
+  filtered_data <- df %>%
+    filter(cntry %in% input$selected_cntry) %>%
+    group_by(hmsacld, cntry) %>%
+    summarise(count = n(), .groups = 'drop') %>%
+    mutate(hmsacld = factor(hmsacld, levels = 1:5))
+  
+  # Create bar plot
+  ggplot(filtered_data, aes(x = cntry, y = count, fill = hmsacld)) +
+    geom_bar(stat = "identity") +
+    labs(
+      title = "Gráfico de Barras Apiladas: Adopción LGTBQ+ por País",
+      x = "País",
+      y = "Frecuencia",
+      fill = "Adopción LGTBQ+"
+    ) +
+    scale_fill_manual(values = c("#67000D", "#A50F15", "#CB181D", "#EF3B2C", "#FB6A4A")) +
+    theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+      plot.title = element_text(hjust = 0.5),
+      panel.background = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.line = element_line(color = "grey"),
+      axis.text.y = element_text(color = "black"),
+      axis.title = element_text(color = "black")
+    )
+})
+```
