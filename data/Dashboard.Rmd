@@ -23,6 +23,10 @@ library(leaflet)
 library(lattice)
 library(ggplot2)
 library(gridExtra)
+library(sf)  
+library(leaflet)  
+library(rnaturalearth)
+library(rnaturalearthdata)
 ```
 
 ```{r}
@@ -236,3 +240,148 @@ renderPlot({
     )
 })
 ```
+
+Página 2: Inmigración, economía e ingresos
+=======================================================================
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+### Selección de país
+
+```{r}
+selectInput('cntry_page3', 'Selecciona el país que quieras visualizar:', 
+            choices = c("Mostrar todos los países" = "all", levels(df$cntry)), 
+            selected = "all")
+```
+
+### Sobre el estudio
+
+<div style="font-size: 0.8em;">
+  <p style="text-align: justify;">Este dashboard muestra cómo cambian las opiniones en los distintos países europeos respecto a la actitud hacia los demás, al impacto de la inmigración, y a la adopción de niños y niñas por parte de personas homosexuales.</p>
+  <p style="text-align: center;"><b>Página 2: 2. ¿Existen patrones regionales en las opiniones sobre el impacto de la inmigración en la economía entre los países de la UE? ¿Cómo correlaciona con los ingresos?</b></p>
+</div>
+
+
+Column {data-height=80}
+-----------------------------------------------------------------------
+
+### Ingresos de los encuestados
+
+```{r}
+renderPlot({
+  filteredData <- if(input$cntry_page3 == "all") {
+    df
+  } else {
+    df %>% filter(cntry == input$cntry_page3)
+  }
+
+  filteredData$hinctnta <- as.numeric(filteredData$hinctnta)
+
+  possible_values_hinctnta <- seq(min(filteredData$hinctnta, na.rm = TRUE), max(filteredData$hinctnta, na.rm = TRUE), by = 1)
+
+  ggplot(filteredData, aes(x = hinctnta)) +
+    geom_histogram(binwidth = 1.0, fill = "coral1", color = "white") +
+    labs(title = "Distribución de 'ingresos'", x = "Deciles", y = "Frecuencia") +
+    geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
+    scale_x_continuous(breaks = possible_values_hinctnta) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      panel.background = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.line = element_line(color = "grey"),
+      axis.text = element_text(color = "black"),
+      axis.title = element_text(color = "black")
+    )
+})
+```
+
+### ¿Cómo impacta la inmigración en la economía?
+
+```{r}
+renderPlot({
+  filteredData <- if(input$cntry_page3 == "all") {
+    df
+  } else {
+    df %>% filter(cntry == input$cntry_page3)
+  }
+
+  possible_values_imbgeco <- seq(min(filteredData$imbgeco, na.rm = TRUE), max(filteredData$imbgeco, na.rm = TRUE), by = 1)
+
+  ggplot(filteredData, aes(x = imbgeco)) +
+    geom_histogram(binwidth = 1, fill = "coral1", color = "white") +
+    labs(title = "Distribución de 'opinión economía e inmigración'", x = "Impacto en la economía", y = "Frecuencia") +
+    geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
+    scale_x_continuous(breaks = possible_values_imbgeco) +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      panel.background = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      axis.line = element_line(color = "grey"),
+      axis.text = element_text(color = "black"),
+      axis.title = element_text(color = "black")
+    )
+})
+```
+
+Column {data-height=100}
+-----------------------------------------------------------------------
+### ¿La actitud que tenemos hacia los demás correlaciona con nuestras opiniones acerca de la inmigración?
+
+```{r}
+# Load map data for Europe
+europe_map <- ne_countries(continent = "Europe", returnclass = "sf")
+
+# Ensure country names match those in your dataset
+# Create a mapping data frame
+country_mapping <- data.frame(
+  iso_a3 = names(country_names),
+  country = country_names,
+  stringsAsFactors = FALSE
+)
+
+# Join the mapping data frame with europe_map
+europe_map <- europe_map %>%
+  left_join(country_mapping, by = "iso_a3")
+
+# Example data: Replace with your actual data
+opinions_data <- df %>%
+  group_by(cntry) %>%
+  summarise(mean_impact = mean(imbgeco, na.rm = TRUE))
+
+# Merge with map data
+map_data <- europe_map %>%
+  left_join(opinions_data, by = c("country" = "cntry"))
+
+# Handle missing data
+map_data <- map_data %>%
+  filter(!is.na(mean_impact))
+
+# Create leaflet map
+renderLeaflet({
+  if (nrow(map_data) == 0) {
+    leaflet() %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addPopups(lng = 0, lat = 0, popup = "No data available", options = popupOptions(closeButton = FALSE))
+  } else {
+    leaflet(data = map_data) %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addPolygons(
+        fillColor = ~colorNumeric(palette = "YlOrRd", domain = map_data$mean_impact)(mean_impact),
+        weight = 1,
+        opacity = 1,
+        color = 'white',
+        dashArray = '3',
+        fillOpacity = 0.7,
+        popup = ~paste("<strong>Country:</strong>", country, "<br>",
+                       "<strong>Average Impact:</strong>", round(mean_impact, 2))
+      ) %>%
+      addLegend(pal = colorNumeric(palette = "YlOrRd", domain = map_data$mean_impact),
+                values = ~mean_impact,
+                title = "Impact on Economy",
+                position = "bottomright")
+  }
+})
+```
+
