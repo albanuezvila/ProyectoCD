@@ -1,0 +1,232 @@
+---
+title: "Integración en la UE: Resultados"
+author: "Alba Nuez Vilà"
+date: "Julio 2024"
+output: 
+  beamer_presentation:
+    fig_width: 5
+    fig_height: 4
+    theme: "Boadilla"
+    colortheme: "dolphin"
+    fonttheme: "structurebold"
+    highlight: "tango"
+header-includes:
+- \usepackage{amsmath}
+- \usepackage{booktabs}
+- \usepackage{ragged2e}  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(lattice)
+```
+
+# Actitud hacia los demás e inmigración
+
+## Introducción
+\begin{center}
+\emph{¿Cómo varía la actitud hacia los demás en diferentes países de la UE? ¿Cómo se correlaciona con la percepción del bienestar en relación con la inmigración?}
+\end{center}
+
+\justify Las actitudes sociales y la percepción sobre la inmigración se influencian mutuamente. Entender cómo se dan estas relaciones puede ser crucial para mejorar la cohesión social y formular políticas de integración efectivas.
+
+## Variable de actitud
+
+\justify La variable "actitud hacia los demás" se obtiene calculando el promedio de las variables "confianza", "honestidad" y "ayuda", como puede observarse en la siguiente fórmula:
+
+\[
+\text{actitud hacia los demás} = \frac{\text{confianza} + \text{honestidad} + \text{ayuda}}{3}
+\]
+
+\justify Estas variables están codificadas en una escala Likert, presentan patrones de respuesta similares y abordan cuestiones relacionadas. Esta variable varía de 0 a 10, donde 0 indica una actitud muy negativa hacia los demás y 10 una actitud muy positiva.
+
+
+## Distribución de la actitud
+
+\justify A nivel europeo, la distribución de esta variable muestra que la mayoría de encuestados presentan una actitud positiva hacia los demás, con una clara tendencia a valores superiores a 5.
+
+```{r histogram1, fig.width=5, fig.height=2.8, echo=FALSE, warning=FALSE}
+# Cargamos la base de datos depurada
+df <- read_excel("../Datos y Dashboard/Depurada_ESS11_subset.xlsx")
+
+#Histograma
+ggplot(df, aes(x = factor(actitud_positiva))) +
+  geom_bar(fill = "coral1", color = "white") +
+  labs(title = "'Actitud hacia los demás'", x = "Actitud", y = "Frecuencia") +
+  geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
+  annotate("text", x = -Inf, y = Inf, label = "0 = Muy negativa", hjust = -0.1, 
+           vjust = 1.5, size = 4, color = "black") +
+  annotate("text", x = -Inf, y = Inf, label = "10 = Muy positiva", hjust = -0.1, 
+           vjust = 3.5, size = 4, color = "black") +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    panel.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.line = element_line(color = "grey"),
+    axis.text.x = element_text(angle = 90, hjust = 1, color = "black"),
+    axis.text.y = element_text(color = "black"),
+    axis.title = element_text(color = "black")
+  )
+```
+
+## Actitud hacia los demás por país
+
+\justify Como puede observarse en el mapa de calor mostrado a continuación, los encuestados de Eslovaquia (SK) y Hungría (HU) tienden a mostrar una actitud menos favorable hacia los demás, con niveles de confianza, honestidad y ayuda por debajo de 5. En contraste, los encuestados austriacos (AT) muestran una actitud más positiva.
+
+## Actitud hacia los demás por país
+
+```{r heatmap1, fig.width=3.5, fig.height=3.5, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'} 
+# Preparamos los datos
+heatmap_data <- df %>%
+  group_by(actitud_positiva, cntry) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+heatmap_matrix <- xtabs(count ~ actitud_positiva + cntry, data = heatmap_data)
+
+levelplot(heatmap_matrix, 
+          xlab = "Actitud", 
+          ylab = "País", 
+          col.regions = colorRampPalette(c("white", "coral1")),
+          scales = list(x = list(rot = 90)), 
+          panel = function(...) {
+            panel.levelplot(...)
+            panel.text(row(heatmap_matrix), col(heatmap_matrix), 
+                       labels = round(heatmap_matrix, 2), cex = 0.4)  
+          },
+          main = "Actitud vs País",
+          par.settings = list(
+            axis.text = list(cex = 0.4),    
+            strip.text = list(cex = 0.4),   
+            legend = list(cex = 0.4),        
+            layout.heights = list(
+              top.padding = 0.5,          
+              main = 0.1               
+            )
+          )
+)        
+```
+## Opinión sobre el impacto de la inmigración en la economía
+
+\justify Como puede observarse en el mapa de calor mostrado a continuación, los encuestados de Eslovaquia (SK) y Hungría (HU) mayoritariamente opinan que la inmigración es mala para la economía de su país, mientras que los encuestados de Alemania (DE) o Austria (AT) tienden a tener una opinión positiva acerca del impacto de inmigración en la economía.
+
+## Opinión sobre el impacto de la inmigración en la economía
+
+```{r heatmap2, fig.width=3.5, fig.height=3.5, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'} 
+
+#Preparamos los datos
+heatmap_data <- df %>%
+  group_by(cntry, imbgeco) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+heatmap_matrix <- xtabs(count ~ imbgeco + cntry, data = heatmap_data)
+
+#Mapa de calor
+levelplot(heatmap_matrix, 
+          xlab = "Opinión inmigración y economía", 
+          ylab = "País", 
+          col.regions = colorRampPalette(c("white", "coral1")),
+          scales = list(x = list(rot = 90)),
+          panel = function(...) {
+            panel.levelplot(...)
+            panel.text(row(heatmap_matrix), col(heatmap_matrix), 
+                       labels = heatmap_matrix, cex = 0.4)  
+          },
+          main = "Inmigración y economía vs país",
+          par.settings = list(
+            axis.text = list(cex = 0.4),  
+            strip.text = list(cex = 0.4), 
+            legend = list(cex = 0.4),     
+            layout.heights = list(
+              top.padding = 0.5,          
+              main = 0.1                 
+            )
+          )
+)
+```
+## Correlación entre actitud y opinión sobre el impacto de la inmigración en la calidad de vida
+
+\justify A nivel europeo parece existir una correlación entre la actitud hacia los demás y la opinión acerca del impacto de la inmigración en la calidad de vida, como se observa en la marcada diagonal en el mapa de calor mostrado a continuación.
+
+## Correlación entre actitud y opinión sobre el impacto de la inmigración en la calidad de vida
+
+```{r heatmap3, fig.width=3.5, fig.height=3.5, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center'} 
+# Preparamos los datos
+heatmap_data_all <- df %>%
+    group_by(actitud_positiva, imwbcnt) %>%
+    summarise(count = n()) %>%
+    ungroup()
+
+heatmap_matrix_all <- xtabs(count ~ actitud_positiva + imwbcnt, data = heatmap_data_all)
+
+# Mapa de calor
+levelplot(heatmap_matrix_all, 
+            xlab = "Actitud", 
+            ylab = "Inmigración y calidad de vida", 
+            col.regions = colorRampPalette(c("white", "coral1")),
+            scales = list(x = list(rot = 90)), 
+            panel = function(...) {
+              panel.levelplot(...)
+              panel.text(row(heatmap_matrix_all), col(heatmap_matrix_all), 
+                         labels = heatmap_matrix_all, cex = 0.4)  
+            },
+            main = "Inmigración y bienestar vs país",
+            par.settings = list(
+              axis.text = list(cex = 0.4),    
+              strip.text = list(cex = 0.4),   
+              legend = list(cex = 0.4),       
+              layout.heights = list(
+                top.padding = 0.5,          
+                main = 0.1                 
+              )
+            )
+)
+```
+# Adopción LGTBQ+
+
+## Introducción
+
+\begin{center}
+\emph{¿Cómo difieren las opiniones sobre la adopción LGTBQ+ entre países?}
+\end{center}
+
+\justify Existen notables diferencias en la opinión sobre la adopción por parte de personas homosexuales entre diferentes países. Como puede observarse en la siguiente tabla, Austria (AT), Países Bajos (NL) y Noruega (NO) muestran un fuerte apoyo a este derecho, mientras que Eslovaquia (SK), Lituania (LT), Hungría (HU) y Croacia (HR) están mayoritariamente en contra.
+
+
+## Diferencias en las opiniones sobre la adopción LGTBQ+
+
+```{r table1, echo=FALSE, warning=FALSE, message=FALSE, fig.align='center', fig.height=3, fig.width=4} 
+library(knitr)
+
+# Preparamos la tabla de opinión sobre adopción LGTBQ+
+opinion_adopcion = data.frame(
+  País = c("1", "2", "3", "4", "5"),
+  AT = c(621, 748, 436, 273, 162),
+  CH = c(326, 434, 236, 223, 129),
+  DE = c(935, 881, 235, 215, 117),
+  FI = c(560, 470, 216, 194, 94),
+  GB = c(618, 562, 218, 148, 81),
+  HR = c(89, 267, 229, 492, 409)
+)
+
+opinion_adopcion_2 = data.frame(
+  País = c("1", "2", "3", "4", "5"),
+  HU = c(161, 388, 540, 432, 527),
+  IE = c(734, 586, 326, 148, 145),
+  LT = c(26, 136, 237, 329, 449),
+  NL = c(882, 497, 145, 90, 62),
+  NO = c(622, 395, 172, 89, 52),
+  SI = c(128, 349, 208, 289, 224),
+  SK = c(36, 155, 243, 329, 610)  
+)
+
+kable(opinion_adopcion)
+kable(opinion_adopcion_2)
+
+```
+
