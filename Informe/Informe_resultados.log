@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.7.25)  25 JUL 2024 13:59
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.7.25)  25 JUL 2024 15:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -189,14 +189,14 @@ L3 programming layer <2024-05-27>
  ) 
 Here is how much of TeX's memory you used:
  3048 strings out of 475544
- 49265 string characters out of 5776765
+ 49257 string characters out of 5776765
  1930905 words of memory out of 5000000
  25652 multiletter control sequences out of 15000+600000
  567991 words of font info for 58 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  59i,6n,67p,520b,199s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </Users/albanuez/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1000.600pk> </Users/albanuez/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1000.600pk> </Users/albanuez/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.600pk> </Users/albanuez/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> </Users/albanuez/Library/TinyTeX/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1728.600pk></Users/albanuez/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb>
-Output written on Informe_resultados.pdf (2 pages, 58975 bytes).
+Output written on Informe_resultados.pdf (2 pages, 58969 bytes).
 PDF statistics:
  183 PDF objects out of 1000 (max. 8388607)
  34 compressed objects within 1 object stream
