@@ -78,8 +78,6 @@ selectInput('cntry', 'Selecciona el país que quieras visualizar:',
   <p style="text-align: center;"><b>Página 1: ¿Cómo varía la actitud hacia los demás en diferentes países de la UE? ¿Cómo se correlaciona con la percepción del bienestar en relación con la inmigración?</b></p>
 </div>
 
-
-
 Column {data-height=80}
 -----------------------------------------------------------------------
 
@@ -89,24 +87,27 @@ Column {data-height=80}
 renderPlot({
   selected_country <- input$cntry
   
-  # Check if "Show all countries" is selected
+  #Selección de países
   if (selected_country == "all") {
     filtered_df <- df
   } else {
     filtered_df <- df %>% filter(cntry == selected_country)
   }
   
+  #Histograma actitud hacia los demás
   ggplot(filtered_df, aes(x = factor(actitud_positiva))) +
     geom_bar(fill = "coral1", color = "white") +
     labs(title = "Distribución de 'Actitud hacia los demás'", x = "Actitud", y = "Frecuencia") +
     geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
+    annotate("text", x = -Inf, y = Inf, label = "0 = Muy negativa", hjust = -0.1, vjust = 1.5, size = 4, color = "black") +
+    annotate("text", x = -Inf, y = Inf, label = "10 = Muy positiva", hjust = -0.1, vjust = 3.5, size = 4, color = "black") +
     theme(
-      plot.title = element_text(hjust = 0.5),
+      plot.title = element_text(hjust = 0.5, face = "bold"),  
       panel.background = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       axis.line = element_line(color = "grey"),
-      axis.text.x = element_text(angle = 90, hjust = 1, color = "black"),  # Rotate x-axis labels 90 degrees
+      axis.text.x = element_text(angle = 90, hjust = 1, color = "black"),  
       axis.text.y = element_text(color = "black"),
       axis.title = element_text(color = "black")
     )
@@ -119,22 +120,26 @@ renderPlot({
 renderPlot({
   selected_country <- input$cntry
   
-  # Check if "Show all countries" is selected
+  #Selección de países
   if (selected_country == "all") {
     filtered_df <- df
   } else {
     filtered_df <- df %>% filter(cntry == selected_country)
   }
   
+  #Valores posibles variable
   possible_values_imwbcnt <- seq(min(filtered_df$imwbcnt, na.rm = TRUE), max(filtered_df$imwbcnt, na.rm = TRUE), by = 1)
   
+  #Histograma opinión calidad de vida e inmigración
   ggplot(filtered_df, aes(x = imwbcnt)) +
     geom_histogram(binwidth = 1, fill = "coral1", color = "white") +
     labs(title = "Distribución de 'Opinión calidad de vida e inmigración'", x = "Impacto en calidad de vida", y = "Frecuencia") +
     geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
     scale_x_continuous(breaks = possible_values_imwbcnt) +
+    annotate("text", x = -Inf, y = Inf, label = "0 = Empeoran la calidad de vida", hjust = -0.1, vjust = 1.5, size = 4, color = "black") +
+    annotate("text", x = -Inf, y = Inf, label = "10 = Mejoran la calidad de vida", hjust = -0.1, vjust = 3.5, size = 4, color = "black") +
     theme(
-      plot.title = element_text(hjust = 0.5),
+      plot.title = element_text(hjust = 0.5, face = "bold"),
       panel.background = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -153,13 +158,14 @@ Column {data-height=100}
 renderPlot({
   selected_country <- input$cntry
   
-  # Check if "Show all countries" is selected
+  #Selección de países
   if (selected_country == "all") {
     filtered_df <- df
   } else {
     filtered_df <- df %>% filter(cntry == selected_country)
   }
   
+  #Datos y matriz para el mapa de calor
   heatmap_data <- filtered_df %>%
     group_by(actitud_positiva, imwbcnt) %>%
     summarise(count = n()) %>%
@@ -167,6 +173,7 @@ renderPlot({
   
   heatmap_matrix <- xtabs(count ~ actitud_positiva + imwbcnt, data = heatmap_data)
   
+  #Mapa de calor
   levelplot(heatmap_matrix, 
             xlab = "Actitud", 
             ylab = "Opinión inmigración y calidad de vida", 
@@ -180,7 +187,6 @@ renderPlot({
             main = "Mapa de calor: Actitud vs opinión inmigración y calidad de vida")
 })
 ```
-
 
 Página 2: Adopción LGTBQ+
 =======================================================================
@@ -210,14 +216,15 @@ Column {data-height=100}
 
 ```{r}
 renderPlot({
-  # Prepare data reactively based on selected countries
+  
+  #Filtramos los datos según los países elegidos
   filtered_data <- df %>%
     filter(cntry %in% input$selected_cntry) %>%
     group_by(hmsacld, cntry) %>%
     summarise(count = n(), .groups = 'drop') %>%
     mutate(hmsacld = factor(hmsacld, levels = 1:5))
   
-  # Create bar plot
+  #Gráfico de barras apiladas
   ggplot(filtered_data, aes(x = cntry, y = count, fill = hmsacld)) +
     geom_bar(stat = "identity") +
     labs(
@@ -228,9 +235,11 @@ renderPlot({
     ) +
     scale_fill_manual(values = c("#67000D", "#A50F15", "#CB181D", "#EF3B2C", "#FB6A4A")) +
     theme_minimal() +
+    annotate("text", x = Inf, y = Inf, label = "1 = Muy de acuerdo", hjust = 1.1, vjust = 1.5, size = 4, color = "black") +
+    annotate("text", x = Inf, y = Inf, label = "5 = Muy en desacuerdo", hjust = 1.1, vjust = 3.5, size = 4, color = "black") +
     theme(
       axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
-      plot.title = element_text(hjust = 0.5),
+      plot.title = element_text(hjust = 0.5, face = "bold"), 
       panel.background = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -238,150 +247,6 @@ renderPlot({
       axis.text.y = element_text(color = "black"),
       axis.title = element_text(color = "black")
     )
-})
-```
-
-Página 2: Inmigración, economía e ingresos
-=======================================================================
-Column {.sidebar}
------------------------------------------------------------------------
-
-### Selección de país
-
-```{r}
-selectInput('cntry_page3', 'Selecciona el país que quieras visualizar:', 
-            choices = c("Mostrar todos los países" = "all", levels(df$cntry)), 
-            selected = "all")
-```
-
-### Sobre el estudio
-
-<div style="font-size: 0.8em;">
-  <p style="text-align: justify;">Este dashboard muestra cómo cambian las opiniones en los distintos países europeos respecto a la actitud hacia los demás, al impacto de la inmigración, y a la adopción de niños y niñas por parte de personas homosexuales.</p>
-  <p style="text-align: center;"><b>Página 2: 2. ¿Existen patrones regionales en las opiniones sobre el impacto de la inmigración en la economía entre los países de la UE? ¿Cómo correlaciona con los ingresos?</b></p>
-</div>
-
-
-Column {data-height=80}
------------------------------------------------------------------------
-
-### Ingresos de los encuestados
-
-```{r}
-renderPlot({
-  filteredData <- if(input$cntry_page3 == "all") {
-    df
-  } else {
-    df %>% filter(cntry == input$cntry_page3)
-  }
-
-  filteredData$hinctnta <- as.numeric(filteredData$hinctnta)
-
-  possible_values_hinctnta <- seq(min(filteredData$hinctnta, na.rm = TRUE), max(filteredData$hinctnta, na.rm = TRUE), by = 1)
-
-  ggplot(filteredData, aes(x = hinctnta)) +
-    geom_histogram(binwidth = 1.0, fill = "coral1", color = "white") +
-    labs(title = "Distribución de 'ingresos'", x = "Deciles", y = "Frecuencia") +
-    geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
-    scale_x_continuous(breaks = possible_values_hinctnta) +
-    theme(
-      plot.title = element_text(hjust = 0.5),
-      panel.background = element_blank(),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      axis.line = element_line(color = "grey"),
-      axis.text = element_text(color = "black"),
-      axis.title = element_text(color = "black")
-    )
-})
-```
-
-### ¿Cómo impacta la inmigración en la economía?
-
-```{r}
-renderPlot({
-  filteredData <- if(input$cntry_page3 == "all") {
-    df
-  } else {
-    df %>% filter(cntry == input$cntry_page3)
-  }
-
-  possible_values_imbgeco <- seq(min(filteredData$imbgeco, na.rm = TRUE), max(filteredData$imbgeco, na.rm = TRUE), by = 1)
-
-  ggplot(filteredData, aes(x = imbgeco)) +
-    geom_histogram(binwidth = 1, fill = "coral1", color = "white") +
-    labs(title = "Distribución de 'opinión economía e inmigración'", x = "Impacto en la economía", y = "Frecuencia") +
-    geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
-    scale_x_continuous(breaks = possible_values_imbgeco) +
-    theme(
-      plot.title = element_text(hjust = 0.5),
-      panel.background = element_blank(),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      axis.line = element_line(color = "grey"),
-      axis.text = element_text(color = "black"),
-      axis.title = element_text(color = "black")
-    )
-})
-```
-
-Column {data-height=100}
------------------------------------------------------------------------
-### ¿La actitud que tenemos hacia los demás correlaciona con nuestras opiniones acerca de la inmigración?
-
-```{r}
-# Load map data for Europe
-europe_map <- ne_countries(continent = "Europe", returnclass = "sf")
-
-# Ensure country names match those in your dataset
-# Create a mapping data frame
-country_mapping <- data.frame(
-  iso_a3 = names(country_names),
-  country = country_names,
-  stringsAsFactors = FALSE
-)
-
-# Join the mapping data frame with europe_map
-europe_map <- europe_map %>%
-  left_join(country_mapping, by = "iso_a3")
-
-# Example data: Replace with your actual data
-opinions_data <- df %>%
-  group_by(cntry) %>%
-  summarise(mean_impact = mean(imbgeco, na.rm = TRUE))
-
-# Merge with map data
-map_data <- europe_map %>%
-  left_join(opinions_data, by = c("country" = "cntry"))
-
-# Handle missing data
-map_data <- map_data %>%
-  filter(!is.na(mean_impact))
-
-# Create leaflet map
-renderLeaflet({
-  if (nrow(map_data) == 0) {
-    leaflet() %>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
-      addPopups(lng = 0, lat = 0, popup = "No data available", options = popupOptions(closeButton = FALSE))
-  } else {
-    leaflet(data = map_data) %>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
-      addPolygons(
-        fillColor = ~colorNumeric(palette = "YlOrRd", domain = map_data$mean_impact)(mean_impact),
-        weight = 1,
-        opacity = 1,
-        color = 'white',
-        dashArray = '3',
-        fillOpacity = 0.7,
-        popup = ~paste("<strong>Country:</strong>", country, "<br>",
-                       "<strong>Average Impact:</strong>", round(mean_impact, 2))
-      ) %>%
-      addLegend(pal = colorNumeric(palette = "YlOrRd", domain = map_data$mean_impact),
-                values = ~mean_impact,
-                title = "Impact on Economy",
-                position = "bottomright")
-  }
 })
 ```
 
