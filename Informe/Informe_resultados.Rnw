@@ -60,10 +60,68 @@ ggplot(df, aes(x = factor(actitud_positiva))) +
 
 La actitud hacia los demás parece estar fuertemente influenciada por el país de origen del encuestado. Según el mapa de calor, los encuestados de Eslovaquia (SK) y Hungría (HU) tienden a mostrar una actitud menos favorable hacia los demás, con niveles de confianza, honestidad y ayuda por debajo de 5. En contraste, los encuestados austriacos (AT) muestran una actitud más positiva, con una respuesta predominante de 7 en estas variables.
 
+<<echo=FALSE, fig=TRUE, fig.width=5, fig.height=4>>=
+library(lattice)
+library(dplyr)
+
+# Assuming df is your dataframe
+# First, create a summary table with counts
+heatmap_data <- df %>%
+  group_by(actitud_positiva, cntry) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+# Normalize cntry by proportions
+heatmap_data <- heatmap_data %>%
+  group_by(actitud_positiva) %>%
+  mutate(prop_count = count / sum(count)) %>%
+  ungroup()
+
+# Convert to matrix format for levelplot
+heatmap_matrix <- xtabs(prop_count ~ actitud_positiva + cntry, data = heatmap_data)
+
+# Plot the heatmap
+levelplot(heatmap_matrix, 
+          xlab = "Actitud", 
+          ylab = "País", 
+          col.regions = colorRampPalette(c("white", "coral1")),
+          scales = list(x = list(rot = 90)),
+          panel = function(...) {
+            panel.levelplot(...)
+            panel.text(row(heatmap_matrix), col(heatmap_matrix), 
+                       labels = round(heatmap_matrix, 2), cex = 0.8)  # Round to 2 decimal places
+          },
+          main = "Mapa de calor: Actitud vs País")
+@
 
 En esta misma línea, los encuestados de Eslovaquia (SK) y Hungría (HU) mayoritariamente opinan que la inmigración es mala para la economía de su país, mientras que los encuestados de Alemania (DE) o Australia (AT) tienden a tener una opinión positiva acerca del impacto de inmigración en la economía.
 
+<<echo=FALSE, fig=TRUE, fig.width=5, fig.height=4>>=
+library(lattice)
+library(dplyr)
 
+heatmap_data <- df %>%
+  group_by(cntry, imbgeco) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+# Convert to matrix format for levelplot without normalization
+heatmap_matrix <- xtabs(count ~ imbgeco + cntry, data = heatmap_data)
+
+# Plot the heatmap with absolute numbers in each cell
+
+levelplot(heatmap_matrix, 
+          xlab = "Opinión inmigración y economía", 
+          ylab = "País", 
+          col.regions = colorRampPalette(c("white", "coral1")),
+          scales = list(x = list(rot = 90)),
+          panel = function(...) {
+            panel.levelplot(...)
+            panel.text(row(heatmap_matrix), col(heatmap_matrix), 
+                       labels = heatmap_matrix, cex = 0.8)  # Display absolute counts
+          },
+          main = "Mapa de calor: Opinión economía e inmigración vs país")
+@
 
 \section{Adopción LGTBQ+}
 
