@@ -105,10 +105,7 @@ heatmap_data <- df %>%
   summarise(count = n()) %>%
   ungroup()
 
-# Convert to matrix format for levelplot without normalization
 heatmap_matrix <- xtabs(count ~ imbgeco + cntry, data = heatmap_data)
-
-# Plot the heatmap with absolute numbers in each cell
 
 levelplot(heatmap_matrix, 
           xlab = "Opinión inmigración y economía", 
@@ -123,8 +120,32 @@ levelplot(heatmap_matrix,
           main = "Mapa de calor: Opinión economía e inmigración vs país")
 @
 
+Finalmente, a nivel europeo parece existir una correlación entre la actitud hacia los demás y la opinión acerca del impacto de la inmigración en la calidad de vida, hecho que puede observarse en el mapa de calor mostrado en el *dashboard*. 
+
+
 \section{Adopción LGTBQ+}
 
-% Add content for Part 2 here
+Existen notables diferencias en la opinión sobre la adopción por parte de personas homosexuales entre diferentes países. Por ejemplo, Austria (AT), Países Bajos (NL) y Noruega muestran un fuerte apoyo a este derecho, mientras que Eslovaquia (SK), Lituania (LT), Hungría (HU) y Croacia (HR) están mayoritariamente en contra, como se evidencia en el siguiente mapa de calor (o el gráfico de barras apiladas incluido en el *dashboard*):
+
+<<echo=FALSE, fig=TRUE, fig.width=5, fig.height=4>>=
+heatmap_data <- df %>%
+  group_by(hmsacld, cntry) %>%
+  summarise(count = n()) %>%
+  ungroup()
+
+heatmap_matrix <- xtabs(count ~ hmsacld + cntry, data = heatmap_data)
+
+levelplot(heatmap_matrix, 
+          xlab = "Adopción LGTBQ+", 
+          ylab = "País", 
+          col.regions = colorRampPalette(c("white", "coral1")),
+          scales = list(x = list(rot = 90)),
+          panel = function(...) {
+            panel.levelplot(...)
+            panel.text(row(heatmap_matrix), col(heatmap_matrix), 
+                       labels = heatmap_matrix, cex = 0.8)  # Display absolute counts
+          },
+          main = "Mapa de calor: Adopción LGTBQ+ vs país")
+@
 
 \end{document}
