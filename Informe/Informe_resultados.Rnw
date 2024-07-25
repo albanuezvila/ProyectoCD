@@ -40,7 +40,7 @@ library(readxl)
 # Cargamos la base de datos depurada
 df <- read_excel("../Datos y Dashboard/Depurada_ESS11_subset.xlsx")
 
-# Plot
+#Histograma
 ggplot(df, aes(x = factor(actitud_positiva))) +
   geom_bar(fill = "coral1", color = "white") +
   labs(title = "'Actitud hacia los demás'", x = "Actitud", y = "Frecuencia") +
@@ -65,7 +65,7 @@ ggplot(df, aes(x = factor(actitud_positiva))) +
 <<histogram, echo=FALSE, fig.width=5, fig.height=4, fig.align='center'>>=
 library(ggplot2)
 
-# Create the plot
+#Histograma
 ggplot(df, aes(x = factor(actitud_positiva))) +
   geom_bar(fill = "coral1", color = "white") +
   labs(title = "'Actitud hacia los demás'", x = "Actitud", y = "Frecuencia") +
@@ -91,18 +91,15 @@ La actitud hacia los demás parece estar fuertemente influenciada por el país d
 library(lattice)
 library(dplyr)
 
-# Assuming df is your dataframe
-# First, create a summary table with counts
+#Preparamos los datos
 heatmap_data <- df %>%
   group_by(actitud_positiva, cntry) %>%
   summarise(count = n()) %>%
   ungroup()
 
-
-# Convert to matrix format for levelplot
 heatmap_matrix <- xtabs(count ~ actitud_positiva + cntry, data = heatmap_data)
 
-# Plot the heatmap
+#Mapa de calor
 levelplot(heatmap_matrix, 
           xlab = "Actitud", 
           ylab = "País", 
@@ -111,7 +108,7 @@ levelplot(heatmap_matrix,
           panel = function(...) {
             panel.levelplot(...)
             panel.text(row(heatmap_matrix), col(heatmap_matrix), 
-                       labels = round(heatmap_matrix, 2), cex = 0.8)  # Round to 2 decimal places
+                       labels = round(heatmap_matrix, 2), cex = 0.8)
           },
           main = "Mapa de calor: Actitud vs País")
 @
@@ -122,6 +119,7 @@ En esta misma línea, los encuestados de Eslovaquia (SK) y Hungría (HU) mayorit
 library(lattice)
 library(dplyr)
 
+#Preparamos los datos
 heatmap_data <- df %>%
   group_by(cntry, imbgeco) %>%
   summarise(count = n()) %>%
@@ -129,6 +127,7 @@ heatmap_data <- df %>%
 
 heatmap_matrix <- xtabs(count ~ imbgeco + cntry, data = heatmap_data)
 
+#Mapa de calor
 levelplot(heatmap_matrix, 
           xlab = "Opinión inmigración y economía", 
           ylab = "País", 
@@ -145,6 +144,7 @@ levelplot(heatmap_matrix,
 Finalmente, a nivel europeo parece existir una correlación entre la actitud hacia los demás y la opinión acerca del impacto de la inmigración en la calidad de vida, hecho que puede observarse en la marcada diagonal en el mapa de calor:
 
 <<echo=FALSE, fig=TRUE>>=
+#Preparamos los datos
 heatmap_data_all <- df %>%
     group_by(actitud_positiva, imwbcnt) %>%
     summarise(count = n()) %>%
@@ -152,7 +152,7 @@ heatmap_data_all <- df %>%
   
 heatmap_matrix_all <- xtabs(count ~ actitud_positiva + imwbcnt, data = heatmap_data_all)
   
-# Mapa de calor para todos los países
+#Mapa de calor
 levelplot(heatmap_matrix_all, 
             xlab = "Actitud", 
             ylab = "Opinión inmigración y calidad de vida", 
@@ -165,9 +165,6 @@ levelplot(heatmap_matrix_all,
             },
             main = "Actitud vs opinión inmigración y calidad de vida")
 @
-
-
-
 
 \section{Adopción LGTBQ+}
 
