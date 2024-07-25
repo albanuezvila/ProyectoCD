@@ -87,28 +87,36 @@ Column {data-height=80}
 ```{r}
 renderPlot({
   selected_country <- input$cntry
+  print(paste("Selected country:", selected_country))
   
-  #Selección de países
+  # Selección de países
   if (selected_country == "all") {
     filtered_df <- df
+    title <- "'Actitud hacia los demás' (Todos los países)"
   } else {
-    filtered_df <- df %>% filter(cntry == selected_country)
+    if (selected_country %in% levels(df$cntry)) {
+      filtered_df <- df %>% filter(cntry == selected_country)
+      title <- paste("'Actitud hacia los demás' (", selected_country, ")", sep = "")
+    } else {
+      filtered_df <- df
+      title <- "'Actitud hacia los demás' (País no encontrado)"
+    }
   }
   
-  #Histograma actitud hacia los demás
+  # Histograma actitud hacia los demás
   ggplot(filtered_df, aes(x = factor(actitud_positiva))) +
     geom_bar(fill = "coral1", color = "white") +
-    labs(title = "Distribución de 'Actitud hacia los demás'", x = "Actitud", y = "Frecuencia") +
+    labs(title = title, x = "Actitud", y = "Frecuencia") +
     geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
     annotate("text", x = -Inf, y = Inf, label = "0 = Muy negativa", hjust = -0.1, vjust = 1.5, size = 4, color = "black") +
     annotate("text", x = -Inf, y = Inf, label = "10 = Muy positiva", hjust = -0.1, vjust = 3.5, size = 4, color = "black") +
     theme(
-      plot.title = element_text(hjust = 0.5, face = "bold"),  
+      plot.title = element_text(hjust = 0.5, face = "bold"),
       panel.background = element_blank(),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       axis.line = element_line(color = "grey"),
-      axis.text.x = element_text(angle = 90, hjust = 1, color = "black"),  
+      axis.text.x = element_text(angle = 90, hjust = 1, color = "black"),
       axis.text.y = element_text(color = "black"),
       axis.title = element_text(color = "black")
     )
@@ -121,20 +129,30 @@ renderPlot({
 renderPlot({
   selected_country <- input$cntry
   
-  #Selección de países
+  # Debugging: Print the selected country
+  print(paste("Selected country:", selected_country))
+  
+  # Selección de países
   if (selected_country == "all") {
     filtered_df <- df
+    title <- "Opinión calidad de vida e inmigración (Todos los países)"
   } else {
-    filtered_df <- df %>% filter(cntry == selected_country)
+    if (selected_country %in% levels(df$cntry)) {
+      filtered_df <- df %>% filter(cntry == selected_country)
+      title <- paste("Opinión calidad de vida e inmigración (", selected_country, ")", sep = "")
+    } else {
+      filtered_df <- df
+      title <- "Opinión calidad de vida e inmigración (País no encontrado)"
+    }
   }
   
-  #Valores posibles variable
+  # Valores posibles variable
   possible_values_imwbcnt <- seq(min(filtered_df$imwbcnt, na.rm = TRUE), max(filtered_df$imwbcnt, na.rm = TRUE), by = 1)
   
-  #Histograma opinión calidad de vida e inmigración
+  # Histograma opinión calidad de vida e inmigración
   ggplot(filtered_df, aes(x = imwbcnt)) +
     geom_histogram(binwidth = 1, fill = "coral1", color = "white") +
-    labs(title = "Distribución de 'Opinión calidad de vida e inmigración'", x = "Impacto en calidad de vida", y = "Frecuencia") +
+    labs(title = title, x = "Impacto en calidad de vida", y = "Frecuencia") +
     geom_text(stat = 'count', aes(label = ..count..), vjust = -0.5, size = 3) +
     scale_x_continuous(breaks = possible_values_imwbcnt) +
     annotate("text", x = -Inf, y = Inf, label = "0 = Empeoran la calidad de vida", hjust = -0.1, vjust = 1.5, size = 4, color = "black") +
@@ -153,20 +171,20 @@ renderPlot({
 
 Column {data-height=100}
 -----------------------------------------------------------------------
-### ¿La actitud que tenemos hacia los demás correlaciona con nuestras opiniones acerca de la inmigración?
+### ¿La actitud que tenemos hacia los demás correlaciona con nuestras opiniones acerca de la inmigración? (*País seleccionado*)
 
 ```{r}
 renderPlot({
   selected_country <- input$cntry
   
-  #Selección de países
+  # Selección de países
   if (selected_country == "all") {
     filtered_df <- df
   } else {
     filtered_df <- df %>% filter(cntry == selected_country)
   }
   
-  #Datos y matriz para el mapa de calor
+  # Datos y matriz para el mapa de calor
   heatmap_data <- filtered_df %>%
     group_by(actitud_positiva, imwbcnt) %>%
     summarise(count = n()) %>%
@@ -174,7 +192,7 @@ renderPlot({
   
   heatmap_matrix <- xtabs(count ~ actitud_positiva + imwbcnt, data = heatmap_data)
   
-  #Mapa de calor
+  # Mapa de calor para el país seleccionado
   levelplot(heatmap_matrix, 
             xlab = "Actitud", 
             ylab = "Opinión inmigración y calidad de vida", 
@@ -183,11 +201,39 @@ renderPlot({
             panel = function(...) {
               panel.levelplot(...)
               panel.text(row(heatmap_matrix), col(heatmap_matrix), 
-                         labels = heatmap_matrix, cex = 0.8)  # Display absolute counts
+                         labels = heatmap_matrix, cex = 0.8)
             },
-            main = "Mapa de calor: Actitud vs opinión inmigración y calidad de vida")
+            main = paste("Actitud vs opinión inmigración y calidad de vida (", selected_country, ")", sep = ""))
 })
 ```
+
+### ¿La actitud que tenemos hacia los demás correlaciona con nuestras opiniones acerca de la inmigración? (*REF: Todos los países*)
+
+```{r}
+renderPlot({
+  # Datos y matriz para el mapa de calor para todos los países
+  heatmap_data_all <- df %>%
+    group_by(actitud_positiva, imwbcnt) %>%
+    summarise(count = n()) %>%
+    ungroup()
+  
+  heatmap_matrix_all <- xtabs(count ~ actitud_positiva + imwbcnt, data = heatmap_data_all)
+  
+  # Mapa de calor para todos los países
+  levelplot(heatmap_matrix_all, 
+            xlab = "Actitud", 
+            ylab = "Opinión inmigración y calidad de vida", 
+            col.regions = colorRampPalette(c("white", "coral1")),
+            scales = list(x = list(rot = 90)),
+            panel = function(...) {
+              panel.levelplot(...)
+              panel.text(row(heatmap_matrix_all), col(heatmap_matrix_all), 
+                         labels = heatmap_matrix_all, cex = 0.8)  # Display absolute counts
+            },
+            main = "Referencia: Actitud vs opinión inmigración y calidad de vida")
+})
+```
+
 
 Página 2: Adopción LGTBQ+
 =======================================================================
