@@ -60,9 +60,8 @@ ggplot(df, aes(x = factor(actitud_positiva))) +
 
 La actitud hacia los demás parece estar fuertemente influenciada por el país de origen del encuestado. Según el mapa de calor, los encuestados de Eslovaquia (SK) y Hungría (HU) tienden a mostrar una actitud menos favorable hacia los demás, con niveles de confianza, honestidad y ayuda por debajo de 5. En contraste, los encuestados austriacos (AT) muestran una actitud más positiva, con una respuesta predominante de 7 en estas variables.
 
-<<table, echo=False>>=
 
-@
+En esta misma línea, los encuestados de Eslovaquia (SK) y Hungría (HU) mayoritariamente opinan que la inmigración es mala para la economía de su país, mientras que los encuestados de Alemania (DE) o Australia (AT) tienden a tener una opinión positiva acerca del impacto de inmigración en la economía.
 
 
 
