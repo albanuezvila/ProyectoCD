@@ -18,7 +18,7 @@ Los objetivos específicos se centran en responder a las siguientes preguntas me
 
 ### Contenido
 
-Este repositorio incluye un archivo README, una carpeta de **datos** (con la base de datos original, el código de depuración, y la base de datos depurada), una carpeta de **dashboard** (con el código rmd para generarlo y su html), una carpeta de **informe** (con su código y pdf), una carpeta de **presentación** (con su código y PDF), y finalmente un documento con la **planificación** de la visualización de datos. 
+Este repositorio incluye un archivo README, una carpeta de **datos y dashboard** (con la base de datos original, el código de depuración, y la base de datos depurada; también incluye el código rmd para generar el dashboard y su html), una carpeta de **informe** (con su código y pdf), una carpeta de **presentación** (con su código y PDF), y finalmente un documento con la **planificación** de la visualización de datos. 
 
 ### Versión de R
 

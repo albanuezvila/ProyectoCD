@@ -1,0 +1,21 @@
+\documentclass{article}
+\title{Integración en la UE: Resultados}
+\author{Alba Nuez Vilà}
+\date{Julio 2024}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\maketitle
+
+\part{Parte 1: Actitud hacia los demás e inmigración}
+
+**¿Cómo varía la actitud hacia los demás en diferentes países de la UE? ¿Cómo se correlaciona con la percepción del bienestar en relación con la inmigración?** Las actitudes sociales y la percepción sobre la inmigración se influencian mutuamente. Entender cómo se dan estas relaciones puede ser crucial para mejorar la cohesión social y formular políticas de integración efectivas.
+
+
+\part{Parte 2: Adopción LGTBQ+}
+
+
+\end{document}
+
+
+
